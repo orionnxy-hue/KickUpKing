@@ -498,47 +498,46 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({
                 {/* MENU */}
                 {gameState === 'MENU' && (
                     <>
-                        {/* Top Bar Area - PROFILE & SOCIAL */}
-                        <div className="absolute top-0 left-0 w-full p-4 flex justify-between items-start pointer-events-none z-50">
-
-                            {/* TOP LEFT: PROFILE */}
-                            <div className="flex flex-col gap-2 pointer-events-auto">
-                                <div className="flex items-center gap-2 bg-blue-600/90 border-2 border-blue-400 p-1 pr-4 rounded-xl shadow-lg transform hover:scale-105 transition-transform cursor-pointer shadow-black/30 w-fit">
-                                    <div className="w-10 h-10 bg-blue-800 rounded-lg flex items-center justify-center border border-white/20 relative overflow-hidden">
-                                        <UserCircle size={24} className="text-white relative z-10" />
-                                        <div className="absolute inset-0 bg-gradient-to-tr from-blue-900 to-transparent"></div>
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-white font-arcade text-sm leading-none drop-shadow-md">{username || "Guest"}</span>
-                                        <span className="text-yellow-300 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
-                                            <Trophy size={10} /> Best: {highScore}
-                                        </span>
-                                    </div>
+                        {/* Top Bar Area - PROFILE & STATUS (TOP LEFT) */}
+                        <div className="absolute top-4 left-4 flex flex-col gap-2 pointer-events-auto z-50">
+                            {/* Profile Card */}
+                            <div className="flex items-center gap-2 bg-blue-600/90 border-2 border-blue-400 p-1 pr-4 rounded-xl shadow-lg transform hover:scale-105 transition-transform cursor-pointer shadow-black/30 w-fit">
+                                <div className="w-10 h-10 bg-blue-800 rounded-lg flex items-center justify-center border border-white/20 relative overflow-hidden">
+                                    <UserCircle size={24} className="text-white relative z-10" />
+                                    <div className="absolute inset-0 bg-gradient-to-tr from-blue-900 to-transparent"></div>
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-white font-arcade text-sm leading-none drop-shadow-md">{username || "Guest"}</span>
+                                    <span className="text-yellow-300 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
+                                        <Trophy size={10} /> Best: {highScore}
+                                    </span>
                                 </div>
                             </div>
 
-                            {/* Hard Reset Button */}
-                            <button
-                                onClick={onHardReset}
-                                className="flex items-center gap-1 text-[10px] font-bold text-white/40 hover:text-red-400 bg-black/40 px-2 py-1 rounded-full w-fit backdrop-blur-sm border border-white/10 transition-colors"
-                                title="Delete Save Data"
-                            >
-                                <Trash2 size={10} /> RESET CAREER
-                            </button>
+                            {/* Status Row: Reset & Sync */}
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={onHardReset}
+                                    className="flex items-center gap-1 text-[10px] font-bold text-white/40 hover:text-red-400 bg-black/40 px-2 py-1 rounded-full backdrop-blur-sm border border-white/10 transition-colors"
+                                    title="Delete Save Data"
+                                >
+                                    <Trash2 size={10} /> RESET CAREER
+                                </button>
 
-                            {cloudError ? (
-                                <div className="flex items-center gap-1 text-[10px] font-bold text-white bg-red-600/90 px-2 py-1 rounded-full w-fit backdrop-blur-sm border border-white/20 animate-pulse shadow-lg">
-                                    <AlertTriangle size={10} /> CLOUD ERROR
-                                </div>
-                            ) : (
-                                <div className="flex items-center gap-1 text-[10px] font-bold text-green-400 bg-black/40 px-2 py-1 rounded-full w-fit backdrop-blur-sm border border-white/10">
-                                    <Cloud size={10} /> SYNCED
-                                </div>
-                            )}
+                                {cloudError ? (
+                                    <div className="flex items-center gap-1 text-[10px] font-bold text-white bg-red-600/90 px-2 py-1 rounded-full backdrop-blur-sm border border-white/20 animate-pulse shadow-lg">
+                                        <AlertTriangle size={10} /> CLOUD ERROR
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center gap-1 text-[10px] font-bold text-green-400 bg-black/40 px-2 py-1 rounded-full backdrop-blur-sm border border-white/10">
+                                        <Cloud size={10} /> SYNCED
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
-                        {/* TOP RIGHT: SOCIAL & COINS */}
-                        <div className="pointer-events-auto flex items-center gap-2 bg-black/40 p-2 rounded-2xl backdrop-blur-sm border border-white/10">
+                        {/* TOP RIGHT: SOCIAL & COINS (RESTORED TO TOP-RIGHT) */}
+                        <div className="absolute top-4 right-4 pointer-events-auto flex items-center gap-2 bg-black/40 p-2 rounded-2xl backdrop-blur-sm border border-white/10 z-50">
                             <button onClick={onOpenFriends} className="relative bg-white/10 hover:bg-white/20 border border-white/10 p-2 rounded-xl shadow-lg transition-all active:scale-95 group">
                                 <Users size={20} className="text-white group-hover:text-blue-400 transition-colors" />
                                 {onlinePlayers.length > 0 && <div className="absolute -top-2 -right-2 bg-green-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow animate-bounce">{onlinePlayers.length}</div>}
@@ -547,6 +546,8 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({
                                 <Mail size={20} className="text-white group-hover:text-yellow-200 transition-colors" />
                                 {totalUnread > 0 && <div className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow animate-pulse">{totalUnread}</div>}
                             </button>
+
+                            {/* Fullscreen Button stays here in top-right box */}
                             {onToggleFullscreen && (
                                 <button
                                     onClick={onToggleFullscreen}
@@ -556,6 +557,7 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({
                                     <Maximize size={20} className="group-hover:text-blue-300 transition-colors" />
                                 </button>
                             )}
+
                             <div className="w-px h-8 bg-white/20 mx-1"></div>
                             <div className="flex items-center gap-2 bg-black/60 border border-yellow-500/50 px-3 py-1.5 rounded-xl shadow-lg">
                                 <Coins size={18} className="text-yellow-400 fill-yellow-400" />
@@ -574,9 +576,8 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({
                     </h1>
                 </div>
 
-                {/* LEFT SIDEBAR ACTIONS (Grouped) */}
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 flex flex-col gap-3 pointer-events-auto z-40 bg-black/20 p-2 rounded-2xl backdrop-blur-sm border border-white/5 shadow-2xl select-none touch-manipulation">
-
+                {/* LEFT SIDEBAR ACTIONS */}
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 flex flex-col gap-3 pointer-events-auto z-40 select-none touch-manipulation">
                     {/* SHOP */}
                     <button
                         onClick={onOpenShop}
@@ -598,7 +599,7 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({
                         <span className="text-[9px] text-white font-black uppercase tracking-wide drop-shadow-md">Tasks</span>
                     </button>
 
-                    {/* UPGRADE */}
+                    {/* STATS (Zap/Upgrade) */}
                     <button
                         onClick={onOpenUpgrade}
                         className={`relative w-16 h-16 bg-gradient-to-br from-emerald-400 to-emerald-600 border-b-4 border-emerald-800 rounded-xl flex flex-col items-center justify-center shadow-lg active:border-b-2 active:translate-y-0.5 transition-all hover:scale-105 ${showUpgradeHint ? 'animate-pulse ring-4 ring-yellow-400' : ''}`}
