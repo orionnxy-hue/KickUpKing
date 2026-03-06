@@ -1450,6 +1450,13 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({
                     </div>
                 )}
             </div>
+
+            {/* VERSION TRACKER */}
+            <div className="absolute bottom-2 right-2 z-50 pointer-events-none opacity-50 bg-black/40 px-2 py-0.5 rounded backdrop-blur-sm border border-white/10">
+                <span className="text-white font-mono text-[10px] font-bold tracking-widest drop-shadow-md">
+                    V1.0
+                </span>
+            </div>
         </div >
     );
 };
