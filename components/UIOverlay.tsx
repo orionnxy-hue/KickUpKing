@@ -66,6 +66,7 @@ interface UIOverlayProps {
     countdownValue?: number | null;
     cloudError?: string | null;
     onHardReset?: () => void;
+    onToggleFullscreen?: () => void;
 }
 
 export const UIOverlay: React.FC<UIOverlayProps> = ({
@@ -127,7 +128,8 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({
     showUpgradeHint = false,
     countdownValue,
     cloudError,
-    onHardReset
+    onHardReset,
+    onToggleFullscreen
 }) => {
     const [inputName, setInputName] = useState("");
     const [inputPin, setInputPin] = useState("");
@@ -510,6 +512,18 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({
                                             <Trophy size={10} /> Best: {highScore}
                                         </span>
                                     </div>
+                                    {onToggleFullscreen && (
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onToggleFullscreen();
+                                            }}
+                                            className="ml-2 p-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors"
+                                            title="Toggle Fullscreen"
+                                        >
+                                            <Maximize size={16} />
+                                        </button>
+                                    )}
                                 </div>
 
                                 {/* Hard Reset Button */}

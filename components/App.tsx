@@ -721,6 +721,17 @@ const App: React.FC = () => {
                 countdownValue={countdownValue}
                 cloudError={cloudError}
                 onHardReset={handleHardReset}
+                onToggleFullscreen={() => {
+                    if (!document.fullscreenElement) {
+                        document.documentElement.requestFullscreen().catch(err => {
+                            console.warn(`Error attempting to enable full-screen mode: ${err.message}`);
+                        });
+                    } else {
+                        if (document.exitFullscreen) {
+                            document.exitFullscreen();
+                        }
+                    }
+                }}
             />
         </div>
     );
