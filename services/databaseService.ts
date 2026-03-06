@@ -581,7 +581,8 @@ class DatabaseService {
                 .select('*')
                 .gt('last_active', isoCutoff)
                 .order('high_score', { ascending: false })
-                .limit(50);
+                 .order('created_at', { ascending: false })
+                 .limit(100);
 
               if (!error && data) {
                   const unique = new Map<string, any>();
@@ -634,7 +635,8 @@ class DatabaseService {
                 .from('profiles')
                 .select('*')
                 .order('high_score', { ascending: false })
-                .limit(50);
+                 .order('created_at', { ascending: false })
+                 .limit(100);
 
             if (!error && data) {
                 const unique = new Map<string, any>();

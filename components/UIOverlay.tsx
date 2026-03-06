@@ -67,6 +67,7 @@ interface UIOverlayProps {
     cloudError?: string | null;
     onHardReset?: () => void;
     onToggleFullscreen?: () => void;
+    onRefreshData?: () => void;
 }
 
 export const UIOverlay: React.FC<UIOverlayProps> = ({
@@ -129,7 +130,8 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({
     countdownValue,
     cloudError,
     onHardReset,
-    onToggleFullscreen
+    onToggleFullscreen,
+    onRefreshData
 }) => {
     const [inputName, setInputName] = useState("");
     const [inputPin, setInputPin] = useState("");
@@ -512,159 +514,156 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({
                                             <Trophy size={10} /> Best: {highScore}
                                         </span>
                                     </div>
-                                    {onToggleFullscreen && (
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                onToggleFullscreen();
-                                            }}
-                                            className="ml-2 p-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors"
-                                            title="Toggle Fullscreen"
-                                        >
-                                            <Maximize size={16} />
-                                        </button>
-                                    )}
                                 </div>
+                            </div>
 
-                                {/* Hard Reset Button */}
+                            {/* Hard Reset Button */}
+                            <button
+                                onClick={onHardReset}
+                                className="flex items-center gap-1 text-[10px] font-bold text-white/40 hover:text-red-400 bg-black/40 px-2 py-1 rounded-full w-fit backdrop-blur-sm border border-white/10 transition-colors"
+                                title="Delete Save Data"
+                            >
+                                <Trash2 size={10} /> RESET CAREER
+                            </button>
+
+                            {cloudError ? (
+                                <div className="flex items-center gap-1 text-[10px] font-bold text-white bg-red-600/90 px-2 py-1 rounded-full w-fit backdrop-blur-sm border border-white/20 animate-pulse shadow-lg">
+                                    <AlertTriangle size={10} /> CLOUD ERROR
+                                </div>
+                            ) : (
+                                <div className="flex items-center gap-1 text-[10px] font-bold text-green-400 bg-black/40 px-2 py-1 rounded-full w-fit backdrop-blur-sm border border-white/10">
+                                    <Cloud size={10} /> SYNCED
+                                </div>
+                            )}
+                        </div>
+
+                        {/* TOP RIGHT: SOCIAL & COINS */}
+                        <div className="pointer-events-auto flex items-center gap-2 bg-black/40 p-2 rounded-2xl backdrop-blur-sm border border-white/10">
+                            <button onClick={onOpenFriends} className="relative bg-white/10 hover:bg-white/20 border border-white/10 p-2 rounded-xl shadow-lg transition-all active:scale-95 group">
+                                <Users size={20} className="text-white group-hover:text-blue-400 transition-colors" />
+                                {onlinePlayers.length > 0 && <div className="absolute -top-2 -right-2 bg-green-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow animate-bounce">{onlinePlayers.length}</div>}
+                            </button>
+                            <button onClick={onOpenInbox} className="relative bg-white/10 hover:bg-white/20 border border-white/10 p-2 rounded-xl shadow-lg transition-all active:scale-95 group">
+                                <Mail size={20} className="text-white group-hover:text-yellow-200 transition-colors" />
+                                {totalUnread > 0 && <div className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow animate-pulse">{totalUnread}</div>}
+                            </button>
+                            {onToggleFullscreen && (
                                 <button
-                                    onClick={onHardReset}
-                                    className="flex items-center gap-1 text-[10px] font-bold text-white/40 hover:text-red-400 bg-black/40 px-2 py-1 rounded-full w-fit backdrop-blur-sm border border-white/10 transition-colors"
-                                    title="Delete Save Data"
+                                    onClick={onToggleFullscreen}
+                                    className="bg-white/10 hover:bg-white/20 border border-white/10 p-2 rounded-xl shadow-lg transition-all active:scale-95 group text-white"
+                                    title="Toggle Fullscreen"
                                 >
-                                    <Trash2 size={10} /> RESET CAREER
+                                    <Maximize size={20} className="group-hover:text-blue-300 transition-colors" />
                                 </button>
-
-                                {cloudError ? (
-                                    <div className="flex items-center gap-1 text-[10px] font-bold text-white bg-red-600/90 px-2 py-1 rounded-full w-fit backdrop-blur-sm border border-white/20 animate-pulse shadow-lg">
-                                        <AlertTriangle size={10} /> CLOUD ERROR
-                                    </div>
-                                ) : (
-                                    <div className="flex items-center gap-1 text-[10px] font-bold text-green-400 bg-black/40 px-2 py-1 rounded-full w-fit backdrop-blur-sm border border-white/10">
-                                        <Cloud size={10} /> SYNCED
-                                    </div>
-                                )}
+                            )}
+                            <div className="w-px h-8 bg-white/20 mx-1"></div>
+                            <div className="flex items-center gap-2 bg-black/60 border border-yellow-500/50 px-3 py-1.5 rounded-xl shadow-lg">
+                                <Coins size={18} className="text-yellow-400 fill-yellow-400" />
+                                <span className="text-white font-arcade text-lg">{tokens}</span>
                             </div>
-
-                            {/* TOP RIGHT: SOCIAL & COINS */}
-                            <div className="pointer-events-auto flex items-center gap-2 bg-black/40 p-2 rounded-2xl backdrop-blur-sm border border-white/10">
-                                <button onClick={onOpenFriends} className="relative bg-white/10 hover:bg-white/20 border border-white/10 p-2 rounded-xl shadow-lg transition-all active:scale-95 group">
-                                    <Users size={20} className="text-white group-hover:text-blue-400 transition-colors" />
-                                    {onlinePlayers.length > 0 && <div className="absolute -top-2 -right-2 bg-green-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow animate-bounce">{onlinePlayers.length}</div>}
-                                </button>
-                                <button onClick={onOpenInbox} className="relative bg-white/10 hover:bg-white/20 border border-white/10 p-2 rounded-xl shadow-lg transition-all active:scale-95 group">
-                                    <Mail size={20} className="text-white group-hover:text-yellow-200 transition-colors" />
-                                    {totalUnread > 0 && <div className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow animate-pulse">{totalUnread}</div>}
-                                </button>
-                                <div className="w-px h-8 bg-white/20 mx-1"></div>
-                                <div className="flex items-center gap-2 bg-black/60 border border-yellow-500/50 px-3 py-1.5 rounded-xl shadow-lg">
-                                    <Coins size={18} className="text-yellow-400 fill-yellow-400" />
-                                    <span className="text-white font-arcade text-lg">{tokens}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Title */}
-                        <div
-                            className="absolute top-24 left-1/2 -translate-x-1/2 pointer-events-auto cursor-default z-40 select-none animate-[bounce_3s_ease-in-out_infinite]"
-                        >
-                            <h1 className="text-4xl md:text-6xl font-arcade text-white text-center drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)] tracking-tighter">
-                                <span className="text-yellow-400">Kick</span>Up <span className="text-blue-400">King</span>
-                            </h1>
-                        </div>
-
-                        {/* LEFT SIDEBAR ACTIONS (Grouped) */}
-                        <div className="absolute left-4 top-1/2 -translate-y-1/2 flex flex-col gap-3 pointer-events-auto z-40 bg-black/20 p-2 rounded-2xl backdrop-blur-sm border border-white/5 shadow-2xl select-none touch-manipulation">
-
-                            {/* SHOP */}
-                            <button
-                                onClick={onOpenShop}
-                                className="w-16 h-16 bg-gradient-to-br from-red-500 to-red-700 border-b-4 border-red-900 rounded-xl flex flex-col items-center justify-center shadow-lg active:border-b-2 active:translate-y-0.5 transition-all hover:scale-105"
-                            >
-                                <ShoppingCart size={24} className="text-white mb-0.5 drop-shadow-md" />
-                                <span className="text-[9px] text-white font-black uppercase tracking-wide drop-shadow-md">Shop</span>
-                            </button>
-
-                            {/* TASKS */}
-                            <button
-                                onClick={onOpenPass}
-                                className="relative w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 border-b-4 border-indigo-800 rounded-xl flex flex-col items-center justify-center shadow-lg active:border-b-2 active:translate-y-0.5 transition-all hover:scale-105"
-                            >
-                                {hasClaimableQuests && (
-                                    <div className="absolute -top-2 -right-2 bg-red-500 w-4 h-4 rounded-full border-2 border-white animate-bounce shadow-md z-10"></div>
-                                )}
-                                <ClipboardList size={24} className="text-white mb-0.5 drop-shadow-md" />
-                                <span className="text-[9px] text-white font-black uppercase tracking-wide drop-shadow-md">Tasks</span>
-                            </button>
-
-                            {/* UPGRADE */}
-                            <button
-                                onClick={onOpenUpgrade}
-                                className={`relative w-16 h-16 bg-gradient-to-br from-emerald-400 to-emerald-600 border-b-4 border-emerald-800 rounded-xl flex flex-col items-center justify-center shadow-lg active:border-b-2 active:translate-y-0.5 transition-all hover:scale-105 ${showUpgradeHint ? 'animate-pulse ring-4 ring-yellow-400' : ''}`}
-                            >
-                                {showUpgradeHint && (
-                                    <div className="absolute -right-14 top-1/2 -translate-y-1/2 bg-yellow-400 text-black font-bold px-2 py-1 rounded text-xs whitespace-nowrap animate-bounce flex items-center z-20 shadow-lg">
-                                        <ArrowLeft className="mr-1" size={14} /> UPGRADE
-                                    </div>
-                                )}
-                                <Zap size={24} className="text-white mb-0.5 fill-white drop-shadow-md" />
-                                <span className="text-[9px] text-white font-black uppercase tracking-wide drop-shadow-md">Stats</span>
-                            </button>
-                        </div>
-
-                        {/* RIGHT SIDEBAR (SPIN WHEEL) */}
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-3 pointer-events-auto z-40 select-none touch-manipulation">
-                            <button
-                                onClick={onOpenSpin}
-                                className="relative w-16 h-16 bg-gradient-to-br from-fuchsia-500 to-purple-600 border-b-4 border-purple-900 rounded-xl flex flex-col items-center justify-center shadow-lg active:border-b-2 active:translate-y-0.5 transition-all hover:scale-105 group"
-                            >
-                                {isFreeSpinAvailable ? (
-                                    <div className="absolute -top-2 -left-2 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full border border-white animate-bounce z-10 shadow">FREE</div>
-                                ) : (
-                                    <div className="absolute inset-0 bg-black/60 rounded-xl flex items-center justify-center z-10">
-                                        <Clock size={20} className="text-white/80" />
-                                    </div>
-                                )}
-                                <Sparkles size={28} className="text-white mb-0.5 drop-shadow-md group-hover:animate-spin-slow" />
-                                <span className="text-[9px] text-white font-black uppercase tracking-wide drop-shadow-md">Spin</span>
-                            </button>
-                        </div>
-
-                        {/* BOTTOM LEFT: PASS RECTANGLE */}
-                        <div className="absolute bottom-6 left-6 pointer-events-auto z-40 select-none touch-manipulation">
-                            <button
-                                onClick={onOpenPass}
-                                className="group relative w-52 h-16 bg-gradient-to-r from-yellow-500 to-orange-600 border-b-4 border-orange-800 rounded-xl flex items-center justify-between px-4 shadow-lg active:border-b-2 active:translate-y-0.5 transition-all hover:scale-105 overflow-hidden ring-1 ring-white/20"
-                            >
-                                <div className="absolute left-0 bottom-0 h-1.5 bg-black/30 w-full">
-                                    <div className="bg-green-400 h-full transition-all duration-500" style={{ width: `${passProgressPercent}%` }}></div>
-                                </div>
-                                <div className="flex items-center gap-3 relative z-10">
-                                    <Crown size={28} className="text-white drop-shadow-md" />
-                                    <div className="flex flex-col items-start">
-                                        <span className="text-xs text-white font-black uppercase tracking-wide drop-shadow-md leading-none mb-0.5">SEASON PASS</span>
-                                        <span className="text-[10px] text-white/80 font-bold">Level {passLevel}</span>
-                                    </div>
-                                </div>
-                                <div className="bg-black/20 p-1.5 rounded-lg relative z-10">
-                                    <ChevronRight size={16} className="text-white" />
-                                </div>
-                            </button>
-                        </div>
-
-                        {/* PLAY BUTTON */}
-                        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-end justify-center pointer-events-none z-40 select-none touch-manipulation">
-                            <button
-                                onClick={onStart}
-                                className="pointer-events-auto bg-gradient-to-b from-yellow-400 to-orange-500 w-56 h-20 rounded-2xl border-b-8 border-orange-700 shadow-[0_0_20px_rgba(250,204,21,0.5)] flex items-center justify-center gap-4 active:border-b-2 active:translate-y-2 transition-all group relative overflow-hidden hover:scale-105 animate-pulse"
-                            >
-                                <div className="absolute top-0 left-0 w-full h-1/2 bg-white/20 pointer-events-none"></div>
-                                <span className="text-4xl font-arcade text-white drop-shadow-[0_2px_0_rgba(0,0,0,0.3)] tracking-widest z-10">PLAY</span>
-                                <Play size={32} className="text-white fill-white drop-shadow-md z-10" />
-                            </button>
                         </div>
                     </>
                 )}
+
+                {/* Title */}
+                <div
+                    className="absolute top-24 left-1/2 -translate-x-1/2 pointer-events-auto cursor-default z-40 select-none animate-[bounce_3s_ease-in-out_infinite]"
+                >
+                    <h1 className="text-4xl md:text-6xl font-arcade text-white text-center drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)] tracking-tighter">
+                        <span className="text-yellow-400">Kick</span>Up <span className="text-blue-400">King</span>
+                    </h1>
+                </div>
+
+                {/* LEFT SIDEBAR ACTIONS (Grouped) */}
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 flex flex-col gap-3 pointer-events-auto z-40 bg-black/20 p-2 rounded-2xl backdrop-blur-sm border border-white/5 shadow-2xl select-none touch-manipulation">
+
+                    {/* SHOP */}
+                    <button
+                        onClick={onOpenShop}
+                        className="w-16 h-16 bg-gradient-to-br from-red-500 to-red-700 border-b-4 border-red-900 rounded-xl flex flex-col items-center justify-center shadow-lg active:border-b-2 active:translate-y-0.5 transition-all hover:scale-105"
+                    >
+                        <ShoppingCart size={24} className="text-white mb-0.5 drop-shadow-md" />
+                        <span className="text-[9px] text-white font-black uppercase tracking-wide drop-shadow-md">Shop</span>
+                    </button>
+
+                    {/* TASKS */}
+                    <button
+                        onClick={onOpenPass}
+                        className="relative w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 border-b-4 border-indigo-800 rounded-xl flex flex-col items-center justify-center shadow-lg active:border-b-2 active:translate-y-0.5 transition-all hover:scale-105"
+                    >
+                        {hasClaimableQuests && (
+                            <div className="absolute -top-2 -right-2 bg-red-500 w-4 h-4 rounded-full border-2 border-white animate-bounce shadow-md z-10"></div>
+                        )}
+                        <ClipboardList size={24} className="text-white mb-0.5 drop-shadow-md" />
+                        <span className="text-[9px] text-white font-black uppercase tracking-wide drop-shadow-md">Tasks</span>
+                    </button>
+
+                    {/* UPGRADE */}
+                    <button
+                        onClick={onOpenUpgrade}
+                        className={`relative w-16 h-16 bg-gradient-to-br from-emerald-400 to-emerald-600 border-b-4 border-emerald-800 rounded-xl flex flex-col items-center justify-center shadow-lg active:border-b-2 active:translate-y-0.5 transition-all hover:scale-105 ${showUpgradeHint ? 'animate-pulse ring-4 ring-yellow-400' : ''}`}
+                    >
+                        {showUpgradeHint && (
+                            <div className="absolute -right-14 top-1/2 -translate-y-1/2 bg-yellow-400 text-black font-bold px-2 py-1 rounded text-xs whitespace-nowrap animate-bounce flex items-center z-20 shadow-lg">
+                                <ArrowLeft className="mr-1" size={14} /> UPGRADE
+                            </div>
+                        )}
+                        <Zap size={24} className="text-white mb-0.5 fill-white drop-shadow-md" />
+                        <span className="text-[9px] text-white font-black uppercase tracking-wide drop-shadow-md">Stats</span>
+                    </button>
+                </div>
+
+                {/* RIGHT SIDEBAR (SPIN WHEEL) */}
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-3 pointer-events-auto z-40 select-none touch-manipulation">
+                    <button
+                        onClick={onOpenSpin}
+                        className="relative w-16 h-16 bg-gradient-to-br from-fuchsia-500 to-purple-600 border-b-4 border-purple-900 rounded-xl flex flex-col items-center justify-center shadow-lg active:border-b-2 active:translate-y-0.5 transition-all hover:scale-105 group"
+                    >
+                        {isFreeSpinAvailable ? (
+                            <div className="absolute -top-2 -left-2 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full border border-white animate-bounce z-10 shadow">FREE</div>
+                        ) : (
+                            <div className="absolute inset-0 bg-black/60 rounded-xl flex items-center justify-center z-10">
+                                <Clock size={20} className="text-white/80" />
+                            </div>
+                        )}
+                        <Sparkles size={28} className="text-white mb-0.5 drop-shadow-md group-hover:animate-spin-slow" />
+                        <span className="text-[9px] text-white font-black uppercase tracking-wide drop-shadow-md">Spin</span>
+                    </button>
+                </div>
+
+                {/* BOTTOM LEFT: PASS RECTANGLE */}
+                <div className="absolute bottom-6 left-6 pointer-events-auto z-40 select-none touch-manipulation">
+                    <button
+                        onClick={onOpenPass}
+                        className="group relative w-52 h-16 bg-gradient-to-r from-yellow-500 to-orange-600 border-b-4 border-orange-800 rounded-xl flex items-center justify-between px-4 shadow-lg active:border-b-2 active:translate-y-0.5 transition-all hover:scale-105 overflow-hidden ring-1 ring-white/20"
+                    >
+                        <div className="absolute left-0 bottom-0 h-1.5 bg-black/30 w-full">
+                            <div className="bg-green-400 h-full transition-all duration-500" style={{ width: `${passProgressPercent}%` }}></div>
+                        </div>
+                        <div className="flex items-center gap-3 relative z-10">
+                            <Crown size={28} className="text-white drop-shadow-md" />
+                            <div className="flex flex-col items-start">
+                                <span className="text-xs text-white font-black uppercase tracking-wide drop-shadow-md leading-none mb-0.5">SEASON PASS</span>
+                                <span className="text-[10px] text-white/80 font-bold">Level {passLevel}</span>
+                            </div>
+                        </div>
+                        <div className="bg-black/20 p-1.5 rounded-lg relative z-10">
+                            <ChevronRight size={16} className="text-white" />
+                        </div>
+                    </button>
+                </div>
+
+                {/* PLAY BUTTON */}
+                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-end justify-center pointer-events-none z-40 select-none touch-manipulation">
+                    <button
+                        onClick={onStart}
+                        className="pointer-events-auto bg-gradient-to-b from-yellow-400 to-orange-500 w-56 h-20 rounded-2xl border-b-8 border-orange-700 shadow-[0_0_20px_rgba(250,204,21,0.5)] flex items-center justify-center gap-4 active:border-b-2 active:translate-y-2 transition-all group relative overflow-hidden hover:scale-105 animate-pulse"
+                    >
+                        <div className="absolute top-0 left-0 w-full h-1/2 bg-white/20 pointer-events-none"></div>
+                        <span className="text-4xl font-arcade text-white drop-shadow-[0_2px_0_rgba(0,0,0,0.3)] tracking-widest z-10">PLAY</span>
+                        <Play size={32} className="text-white fill-white drop-shadow-md z-10" />
+                    </button>
+                </div>
 
                 {/* SPIN WHEEL OVERLAY */}
                 {gameState === 'SPIN' && (
@@ -1114,9 +1113,21 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({
                                 <h2 className="text-3xl font-arcade text-white tracking-wider flex items-center gap-3">
                                     <Globe className="text-blue-400" /> SOCIAL
                                 </h2>
-                                <button onClick={onCloseShop} className="bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors text-white">
-                                    <ArrowLeft size={24} />
-                                </button>
+                                <div className="flex items-center gap-2">
+                                    {onRefreshData && (
+                                        <button
+                                            onClick={onRefreshData}
+                                            className="bg-blue-600 hover:bg-blue-500 p-2 rounded-full transition-colors text-white flex items-center gap-2 px-4 shadow-lg active:scale-95"
+                                            title="Refresh Data"
+                                        >
+                                            <RotateCcw size={16} className="animate-spin-slow" />
+                                            <span className="text-xs font-bold font-arcade uppercase tracking-tighter">Refresh</span>
+                                        </button>
+                                    )}
+                                    <button onClick={onCloseShop} className="bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors text-white">
+                                        <ArrowLeft size={24} />
+                                    </button>
+                                </div>
                             </div>
 
                             <div className="flex gap-2 mb-6 bg-black/20 p-1 rounded-xl shrink-0">
@@ -1433,6 +1444,6 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     );
 };

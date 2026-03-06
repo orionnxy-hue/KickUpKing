@@ -97,6 +97,17 @@ const App: React.FC = () => {
     }, []);
 
     // --- LOAD SYSTEM ---
+    const handleRefreshData = async () => {
+        setCloudError(null);
+        dbService.getOnlineUsers(userId, username, highScore).then(setOnlinePlayers);
+        dbService.getGlobalLeaderboard().then(setGlobalLeaderboard);
+        if (userId) {
+            const requests = await dbService.getIncomingRequests(userId);
+            setFriendRequests(requests);
+            addNotification("Cloud Refresh", "Latest player data synchronized!", "success");
+        }
+    };
+
     useEffect(() => {
         const storedHS = localStorage.getItem(STORAGE_KEY_HIGHSCORE);
         const parsedHS = storedHS ? parseInt(storedHS, 10) : 0;
@@ -732,6 +743,7 @@ const App: React.FC = () => {
                         }
                     }
                 }}
+                onRefreshData={handleRefreshData}
             />
         </div>
     );
