@@ -286,7 +286,7 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({
         <div className="absolute inset-0 z-20 pointer-events-none flex flex-col justify-between p-6 overflow-hidden">
 
             {/* HUD */}
-            {(gameState !== 'REPLAY' && gameState !== 'USERNAME_INPUT' && gameState !== 'MENU' && gameState !== 'COUNTDOWN' && gameState !== 'TUTORIAL') && (
+            {(gameState === 'PLAYING' || gameState === 'GAME_OVER') && (
                 <div className="flex justify-between items-start w-full pointer-events-auto">
                     <div className="flex flex-col gap-2">
                         <div className="flex flex-col">
@@ -325,7 +325,7 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({
                         </div>
 
                         {gameState === 'PLAYING' && (
-                            <div className="bg-black/30 backdrop-blur-sm rounded-lg p-2 mt-1 border border-white/10 w-32">
+                            <div className="bg-black/30 backdrop-blur-sm rounded-lg p-2 mt-1 border border-white/10 w-32 hidden md:block">
                                 <div className="text-[10px] text-white/50 font-bold uppercase mb-1 tracking-wider">Leaderboard</div>
                                 {leaderboard.slice(0, 3).map((entry, idx) => (
                                     <div key={idx} className={`flex justify-between text-xs mb-0.5 ${entry.isMe ? 'text-yellow-300 font-bold' : 'text-white/80'}`}>
@@ -576,95 +576,100 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({
                     </h1>
                 </div>
 
-                {/* LEFT SIDEBAR ACTIONS */}
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 flex flex-col gap-3 pointer-events-auto z-40 select-none touch-manipulation">
-                    {/* SHOP */}
-                    <button
-                        onClick={onOpenShop}
-                        className="w-16 h-16 bg-gradient-to-br from-red-500 to-red-700 border-b-4 border-red-900 rounded-xl flex flex-col items-center justify-center shadow-lg active:border-b-2 active:translate-y-0.5 transition-all hover:scale-105"
-                    >
-                        <ShoppingCart size={24} className="text-white mb-0.5 drop-shadow-md" />
-                        <span className="text-[9px] text-white font-black uppercase tracking-wide drop-shadow-md">Shop</span>
-                    </button>
+                {/* Sidebars and Menu UI */}
+                {gameState === 'MENU' && (
+                    <>
+                        {/* LEFT SIDEBAR ACTIONS */}
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 flex flex-col gap-3 pointer-events-auto z-40 select-none touch-manipulation">
+                            {/* SHOP */}
+                            <button
+                                onClick={onOpenShop}
+                                className="w-16 h-16 bg-gradient-to-br from-red-500 to-red-700 border-b-4 border-red-900 rounded-xl flex flex-col items-center justify-center shadow-lg active:border-b-2 active:translate-y-0.5 transition-all hover:scale-105"
+                            >
+                                <ShoppingCart size={24} className="text-white mb-0.5 drop-shadow-md" />
+                                <span className="text-[9px] text-white font-black uppercase tracking-wide drop-shadow-md">Shop</span>
+                            </button>
 
-                    {/* TASKS */}
-                    <button
-                        onClick={onOpenPass}
-                        className="relative w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 border-b-4 border-indigo-800 rounded-xl flex flex-col items-center justify-center shadow-lg active:border-b-2 active:translate-y-0.5 transition-all hover:scale-105"
-                    >
-                        {hasClaimableQuests && (
-                            <div className="absolute -top-2 -right-2 bg-red-500 w-4 h-4 rounded-full border-2 border-white animate-bounce shadow-md z-10"></div>
-                        )}
-                        <ClipboardList size={24} className="text-white mb-0.5 drop-shadow-md" />
-                        <span className="text-[9px] text-white font-black uppercase tracking-wide drop-shadow-md">Tasks</span>
-                    </button>
+                            {/* TASKS */}
+                            <button
+                                onClick={onOpenPass}
+                                className="relative w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 border-b-4 border-indigo-800 rounded-xl flex flex-col items-center justify-center shadow-lg active:border-b-2 active:translate-y-0.5 transition-all hover:scale-105"
+                            >
+                                {hasClaimableQuests && (
+                                    <div className="absolute -top-2 -right-2 bg-red-500 w-4 h-4 rounded-full border-2 border-white animate-bounce shadow-md z-10"></div>
+                                )}
+                                <ClipboardList size={24} className="text-white mb-0.5 drop-shadow-md" />
+                                <span className="text-[9px] text-white font-black uppercase tracking-wide drop-shadow-md">Tasks</span>
+                            </button>
 
-                    {/* STATS (Zap/Upgrade) */}
-                    <button
-                        onClick={onOpenUpgrade}
-                        className={`relative w-16 h-16 bg-gradient-to-br from-emerald-400 to-emerald-600 border-b-4 border-emerald-800 rounded-xl flex flex-col items-center justify-center shadow-lg active:border-b-2 active:translate-y-0.5 transition-all hover:scale-105 ${showUpgradeHint ? 'animate-pulse ring-4 ring-yellow-400' : ''}`}
-                    >
-                        {showUpgradeHint && (
-                            <div className="absolute -right-14 top-1/2 -translate-y-1/2 bg-yellow-400 text-black font-bold px-2 py-1 rounded text-xs whitespace-nowrap animate-bounce flex items-center z-20 shadow-lg">
-                                <ArrowLeft className="mr-1" size={14} /> UPGRADE
-                            </div>
-                        )}
-                        <Zap size={24} className="text-white mb-0.5 fill-white drop-shadow-md" />
-                        <span className="text-[9px] text-white font-black uppercase tracking-wide drop-shadow-md">Stats</span>
-                    </button>
-                </div>
-
-                {/* RIGHT SIDEBAR (SPIN WHEEL) */}
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-3 pointer-events-auto z-40 select-none touch-manipulation">
-                    <button
-                        onClick={onOpenSpin}
-                        className="relative w-16 h-16 bg-gradient-to-br from-fuchsia-500 to-purple-600 border-b-4 border-purple-900 rounded-xl flex flex-col items-center justify-center shadow-lg active:border-b-2 active:translate-y-0.5 transition-all hover:scale-105 group"
-                    >
-                        {isFreeSpinAvailable ? (
-                            <div className="absolute -top-2 -left-2 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full border border-white animate-bounce z-10 shadow">FREE</div>
-                        ) : (
-                            <div className="absolute inset-0 bg-black/60 rounded-xl flex items-center justify-center z-10">
-                                <Clock size={20} className="text-white/80" />
-                            </div>
-                        )}
-                        <Sparkles size={28} className="text-white mb-0.5 drop-shadow-md group-hover:animate-spin-slow" />
-                        <span className="text-[9px] text-white font-black uppercase tracking-wide drop-shadow-md">Spin</span>
-                    </button>
-                </div>
-
-                {/* BOTTOM LEFT: PASS RECTANGLE */}
-                <div className="absolute bottom-6 left-6 pointer-events-auto z-40 select-none touch-manipulation">
-                    <button
-                        onClick={onOpenPass}
-                        className="group relative w-52 h-16 bg-gradient-to-r from-yellow-500 to-orange-600 border-b-4 border-orange-800 rounded-xl flex items-center justify-between px-4 shadow-lg active:border-b-2 active:translate-y-0.5 transition-all hover:scale-105 overflow-hidden ring-1 ring-white/20"
-                    >
-                        <div className="absolute left-0 bottom-0 h-1.5 bg-black/30 w-full">
-                            <div className="bg-green-400 h-full transition-all duration-500" style={{ width: `${passProgressPercent}%` }}></div>
+                            {/* STATS (Zap/Upgrade) */}
+                            <button
+                                onClick={onOpenUpgrade}
+                                className={`relative w-16 h-16 bg-gradient-to-br from-emerald-400 to-emerald-600 border-b-4 border-emerald-800 rounded-xl flex flex-col items-center justify-center shadow-lg active:border-b-2 active:translate-y-0.5 transition-all hover:scale-105 ${showUpgradeHint ? 'animate-pulse ring-4 ring-yellow-400' : ''}`}
+                            >
+                                {showUpgradeHint && (
+                                    <div className="absolute -right-14 top-1/2 -translate-y-1/2 bg-yellow-400 text-black font-bold px-2 py-1 rounded text-xs whitespace-nowrap animate-bounce flex items-center z-20 shadow-lg">
+                                        <ArrowLeft className="mr-1" size={14} /> UPGRADE
+                                    </div>
+                                )}
+                                <Zap size={24} className="text-white mb-0.5 fill-white drop-shadow-md" />
+                                <span className="text-[9px] text-white font-black uppercase tracking-wide drop-shadow-md">Stats</span>
+                            </button>
                         </div>
-                        <div className="flex items-center gap-3 relative z-10">
-                            <Crown size={28} className="text-white drop-shadow-md" />
-                            <div className="flex flex-col items-start">
-                                <span className="text-xs text-white font-black uppercase tracking-wide drop-shadow-md leading-none mb-0.5">SEASON PASS</span>
-                                <span className="text-[10px] text-white/80 font-bold">Level {passLevel}</span>
-                            </div>
-                        </div>
-                        <div className="bg-black/20 p-1.5 rounded-lg relative z-10">
-                            <ChevronRight size={16} className="text-white" />
-                        </div>
-                    </button>
-                </div>
 
-                {/* PLAY BUTTON */}
-                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-end justify-center pointer-events-none z-40 select-none touch-manipulation">
-                    <button
-                        onClick={onStart}
-                        className="pointer-events-auto bg-gradient-to-b from-yellow-400 to-orange-500 w-56 h-20 rounded-2xl border-b-8 border-orange-700 shadow-[0_0_20px_rgba(250,204,21,0.5)] flex items-center justify-center gap-4 active:border-b-2 active:translate-y-2 transition-all group relative overflow-hidden hover:scale-105 animate-pulse"
-                    >
-                        <div className="absolute top-0 left-0 w-full h-1/2 bg-white/20 pointer-events-none"></div>
-                        <span className="text-4xl font-arcade text-white drop-shadow-[0_2px_0_rgba(0,0,0,0.3)] tracking-widest z-10">PLAY</span>
-                        <Play size={32} className="text-white fill-white drop-shadow-md z-10" />
-                    </button>
-                </div>
+                        {/* RIGHT SIDEBAR (SPIN WHEEL) */}
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-3 pointer-events-auto z-40 select-none touch-manipulation">
+                            <button
+                                onClick={onOpenSpin}
+                                className="relative w-16 h-16 bg-gradient-to-br from-fuchsia-500 to-purple-600 border-b-4 border-purple-900 rounded-xl flex flex-col items-center justify-center shadow-lg active:border-b-2 active:translate-y-0.5 transition-all hover:scale-105 group"
+                            >
+                                {isFreeSpinAvailable ? (
+                                    <div className="absolute -top-2 -left-2 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full border border-white animate-bounce z-10 shadow">FREE</div>
+                                ) : (
+                                    <div className="absolute inset-0 bg-black/60 rounded-xl flex items-center justify-center z-10">
+                                        <Clock size={20} className="text-white/80" />
+                                    </div>
+                                )}
+                                <Sparkles size={28} className="text-white mb-0.5 drop-shadow-md group-hover:animate-spin-slow" />
+                                <span className="text-[9px] text-white font-black uppercase tracking-wide drop-shadow-md">Spin</span>
+                            </button>
+                        </div>
+
+                        {/* BOTTOM LEFT: PASS RECTANGLE */}
+                        <div className="absolute bottom-6 left-6 pointer-events-auto z-40 select-none touch-manipulation sm:scale-100 scale-90 origin-bottom-left">
+                            <button
+                                onClick={onOpenPass}
+                                className="group relative w-52 h-16 bg-gradient-to-r from-yellow-500 to-orange-600 border-b-4 border-orange-800 rounded-xl flex items-center justify-between px-4 shadow-lg active:border-b-2 active:translate-y-0.5 transition-all hover:scale-105 overflow-hidden ring-1 ring-white/20"
+                            >
+                                <div className="absolute left-0 bottom-0 h-1.5 bg-black/30 w-full">
+                                    <div className="bg-green-400 h-full transition-all duration-500" style={{ width: `${passProgressPercent}%` }}></div>
+                                </div>
+                                <div className="flex items-center gap-3 relative z-10">
+                                    <Crown size={28} className="text-white drop-shadow-md" />
+                                    <div className="flex flex-col items-start">
+                                        <span className="text-xs text-white font-black uppercase tracking-wide drop-shadow-md leading-none mb-0.5">SEASON PASS</span>
+                                        <span className="text-[10px] text-white/80 font-bold">Level {passLevel}</span>
+                                    </div>
+                                </div>
+                                <div className="bg-black/20 p-1.5 rounded-lg relative z-10">
+                                    <ChevronRight size={16} className="text-white" />
+                                </div>
+                            </button>
+                        </div>
+
+                        {/* PLAY BUTTON - Adjusted for mobile position */}
+                        <div className="absolute bottom-[20%] left-1/2 -translate-x-1/2 flex items-end justify-center pointer-events-none z-40 select-none touch-manipulation">
+                            <button
+                                onClick={onStart}
+                                className="pointer-events-auto bg-gradient-to-b from-yellow-400 to-orange-500 w-56 h-20 rounded-2xl border-b-8 border-orange-700 shadow-[0_0_20px_rgba(250,204,21,0.5)] flex items-center justify-center gap-4 active:border-b-2 active:translate-y-2 transition-all group relative overflow-hidden hover:scale-105 animate-pulse"
+                            >
+                                <div className="absolute top-0 left-0 w-full h-1/2 bg-white/20 pointer-events-none"></div>
+                                <span className="text-4xl font-arcade text-white drop-shadow-[0_2px_0_rgba(0,0,0,0.3)] tracking-widest z-10">PLAY</span>
+                                <Play size={32} className="text-white fill-white drop-shadow-md z-10" />
+                            </button>
+                        </div>
+                    </>
+                )}
 
                 {/* SPIN WHEEL OVERLAY */}
                 {gameState === 'SPIN' && (
