@@ -749,13 +749,23 @@ const App: React.FC = () => {
                 cloudError={cloudError}
                 onHardReset={handleHardReset}
                 onToggleFullscreen={() => {
-                    if (!document.fullscreenElement) {
-                        document.documentElement.requestFullscreen().catch(err => {
-                            console.warn(`Error attempting to enable full-screen mode: ${err.message}`);
-                        });
+                    const doc = window.document as any;
+                    const docEl = doc.documentElement as any;
+
+                    const requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
+                    const cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
+
+                    const isFullscreen = doc.fullscreenElement || doc.mozFullScreenElement || doc.webkitFullscreenElement || doc.msFullscreenElement;
+
+                    if (!isFullscreen) {
+                        if (requestFullScreen) {
+                            requestFullScreen.call(docEl).catch((err: any) => {
+                                console.warn(`Error attempting to enable full-screen mode: ${err.message}`);
+                            });
+                        }
                     } else {
-                        if (document.exitFullscreen) {
-                            document.exitFullscreen();
+                        if (cancelFullScreen) {
+                            cancelFullScreen.call(doc);
                         }
                     }
                 }}
