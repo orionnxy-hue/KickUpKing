@@ -1171,13 +1171,17 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
         // --- PENALTY AREA ---
         ctx.save();
         ctx.strokeStyle = 'rgba(255,255,255,0.6)';
-        ctx.lineWidth = 4;
-        const boxTopW = 440;
-        const boxBottomW = 900;
-        const boxTopY = floorY;
-        const boxBottomY = height - 50;
+        ctx.lineWidth = 3;
+
+        // Perspective params
+        const zFactorBox = 1.3; // How much it widens towards camera
 
         // 18-yard box
+        const boxTopW = 550;
+        const boxBottomW = boxTopW * zFactorBox; // approx 715
+        const boxTopY = floorY;
+        const boxBottomY = floorY + 160; // Shorter depth
+
         ctx.beginPath();
         ctx.moveTo(centerX - boxTopW / 2, boxTopY);
         ctx.lineTo(centerX - boxBottomW / 2, boxBottomY);
@@ -1186,9 +1190,9 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
         ctx.stroke();
 
         // 6-yard box
-        const goalAreaTopW = 150;
-        const goalAreaBottomW = 300;
-        const goalAreaBottomY = floorY + 80;
+        const goalAreaTopW = 340; // match goal width roughly
+        const goalAreaBottomW = goalAreaTopW * 1.15; // approx 391
+        const goalAreaBottomY = floorY + 60;
 
         ctx.beginPath();
         ctx.moveTo(centerX - goalAreaTopW / 2, boxTopY);
@@ -1198,14 +1202,17 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
         ctx.stroke();
 
         // Penalty arc (D shape) - Drawn below the 18 yard box line
+        const arcRadiusX = 100;
+        const arcRadiusY = 30; // Squished for perspective
         ctx.beginPath();
-        ctx.ellipse(centerX, boxBottomY, 180, 40, 0, Math.PI, Math.PI * 2);
+        ctx.ellipse(centerX, boxBottomY, arcRadiusX, arcRadiusY, 0, 0, Math.PI);
         ctx.stroke();
 
-        // Penalty spot
-        ctx.fillStyle = 'rgba(255,255,255,0.9)';
+        // Penalty Spot
+        const spotY = floorY + 110;
         ctx.beginPath();
-        ctx.arc(centerX, boxBottomY - 60, 6, 0, Math.PI * 2);
+        ctx.ellipse(centerX, spotY, 6, 3, 0, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,0.8)';
         ctx.fill();
         ctx.restore();
 
