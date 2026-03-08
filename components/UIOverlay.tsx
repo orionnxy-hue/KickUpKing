@@ -49,7 +49,7 @@ interface UIOverlayProps {
     isAiLoading: boolean;
     onReplay: () => void;
     onSetUsername: (name: string, pin: string) => Promise<boolean | string>;
-    onSearchFriend: (name: string) => Promise<Friend | null>;
+    onSearchFriend: (name: string) => Promise<Friend[]>;
     onSendFriendRequest: (friend: Friend) => Promise<boolean>;
     onAcceptRequest: (req: FriendRequest) => void;
     onRejectRequest: (req: FriendRequest) => void;
@@ -136,7 +136,7 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({
     const [inputName, setInputName] = useState("");
     const [inputPin, setInputPin] = useState("");
     const [friendNameInput, setFriendNameInput] = useState("");
-    const [searchResult, setSearchResult] = useState<Friend | null>(null);
+    const [searchResults, setSearchResults] = useState<Friend[]>([]);
     const [socialTab, setSocialTab] = useState<'FRIENDS' | 'ONLINE' | 'GLOBAL'>('FRIENDS');
     const [passTab, setPassTab] = useState<'TASKS' | 'PASS'>('TASKS');
     const [tutorialTapCount, setTutorialTapCount] = useState(0);
@@ -1251,9 +1251,9 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({
                                                 <button
                                                     onClick={() => {
                                                         setIsSearching(true);
-                                                        setSearchResult(null);
+                                                        setSearchResults([]);
                                                         onSearchFriend(friendNameInput).then(res => {
-                                                            setSearchResult(res);
+                                                            setSearchResults(res);
                                                             setIsSearching(false);
                                                         });
                                                     }}
@@ -1264,39 +1264,50 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({
                                                 </button>
                                             </div>
 
-                                            {searchResult && (
-                                                <div className="bg-white/5 p-3 rounded-lg border border-white/10 mt-2 animate-fade-in">
-                                                    <div className="flex justify-between items-center mb-2">
-                                                        <span className="text-white font-bold">{searchResult.name}</span>
-                                                        <span className="text-yellow-400 font-arcade text-sm">{searchResult.highScore}</span>
-                                                    </div>
-                                                    <button
-                                                        onClick={() => {
-                                                            onSendFriendRequest(searchResult).then(ok => {
-                                                                if (ok) {
-                                                                    setSentRequestIds(prev => [...prev, searchResult.id]);
-                                                                } else {
-                                                                    setRequestErrors(prev => ({ ...prev, [searchResult.id]: "Failed" }));
-                                                                }
-                                                                setTimeout(() => {
-                                                                    setSearchResult(null);
-                                                                    setFriendNameInput("");
-                                                                    setRequestErrors(prev => {
-                                                                        const next = { ...prev };
-                                                                        delete next[searchResult.id];
-                                                                        return next;
-                                                                    });
-                                                                }, 2000);
-                                                            });
-                                                        }}
-                                                        disabled={sentRequestIds.includes(searchResult.id)}
-                                                        className="w-full bg-green-600 hover:bg-green-500 text-white font-bold text-xs py-2 rounded disabled:opacity-50"
-                                                    >
-                                                        {sentRequestIds.includes(searchResult.id) ? "REQUEST SENT" : "SEND REQUEST"}
-                                                    </button>
+                                            {searchResults.length > 0 && (
+                                                <div className="mt-2 space-y-2 max-h-48 overflow-y-auto">
+                                                    {searchResults.map(result => (
+                                                        <div key={result.id} className="bg-white/5 p-3 rounded-lg border border-white/10 animate-fade-in">
+                                                            <div className="flex justify-between items-center">
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="w-7 h-7 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold border border-white/20">
+                                                                        {result.name.substring(0, 1).toUpperCase()}
+                                                                    </div>
+                                                                    <div>
+                                                                        <span className="text-white font-bold text-sm">{result.name}</span>
+                                                                        <div className="text-yellow-400 font-arcade text-xs">{result.highScore}</div>
+                                                                    </div>
+                                                                </div>
+                                                                <button
+                                                                    onClick={() => {
+                                                                        onSendFriendRequest(result).then(ok => {
+                                                                            if (ok) {
+                                                                                setSentRequestIds(prev => [...prev, result.id]);
+                                                                            } else {
+                                                                                setRequestErrors(prev => ({ ...prev, [result.id]: "Failed" }));
+                                                                                setTimeout(() => {
+                                                                                    setRequestErrors(prev => {
+                                                                                        const next = { ...prev };
+                                                                                        delete next[result.id];
+                                                                                        return next;
+                                                                                    });
+                                                                                }, 2000);
+                                                                            }
+                                                                        });
+                                                                    }}
+                                                                    disabled={sentRequestIds.includes(result.id) || result.id === userId || friends.some(f => f.id === result.id)}
+                                                                    className="bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white font-bold text-xs py-1.5 px-3 rounded"
+                                                                >
+                                                                    {sentRequestIds.includes(result.id) ? "SENT ✓" : result.id === userId ? "YOU" : friends.some(f => f.id === result.id) ? "FRIEND" : "ADD"}
+                                                                </button>
+                                                            </div>
+                                                            {requestErrors[result.id] && <div className="text-red-400 text-xs font-bold mt-1">{requestErrors[result.id]}</div>}
+                                                        </div>
+                                                    ))}
                                                 </div>
                                             )}
-                                            {searchResult && requestErrors[searchResult.id] && <div className="text-red-400 text-xs font-bold mt-2 text-center">{requestErrors[searchResult.id]}</div>}
+                                            {isSearching && <div className="text-white/40 text-xs text-center mt-2">Searching...</div>}
+                                            {!isSearching && searchResults.length === 0 && friendNameInput.length > 0 && <div className="text-white/40 text-xs text-center mt-2">No players found</div>}
                                         </div>
 
                                         <div className="bg-black/20 p-4 rounded-xl border border-white/5 flex-1">

@@ -619,8 +619,8 @@ const App: React.FC = () => {
         }
     };
 
-    const handleSearchFriend = async (name: string): Promise<Friend | null> => {
-        return await dbService.searchUser(name);
+    const handleSearchFriend = async (name: string): Promise<Friend[]> => {
+        return await dbService.searchUsers(name);
     };
 
     const handleAcceptRequest = async (request: FriendRequest) => {

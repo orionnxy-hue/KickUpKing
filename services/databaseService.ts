@@ -458,47 +458,47 @@ class DatabaseService {
         }
     }
 
-    // 3. Search for a friend by Username
-    public async searchUser(queryName: string): Promise<Friend | null> {
+    // 3. Search for friends by Username (returns multiple matches)
+    public async searchUsers(queryName: string): Promise<Friend[]> {
         const lowerName = queryName.toLowerCase().trim();
+        if (!lowerName) return [];
 
         if (supabase) {
             try {
                 const { data, error } = await supabase
                     .from('profiles')
                     .select('*')
-                    .ilike('username', `%${queryName}%`)
+                    .ilike('username', `%${lowerName}%`)
                     .order('high_score', { ascending: false })
-                    .limit(1);
+                    .limit(10);
 
                 if (!error && data && data.length > 0) {
-                    const p = data[0];
-                    return {
+                    return data.map((p: any) => ({
                         id: p.user_id,
                         name: p.username,
                         highScore: p.high_score
-                    };
+                    }));
                 }
             } catch (e) {
                 console.warn("Supabase search failed");
             }
         }
 
-        let targetId = this.localDb.usernameMap[lowerName];
-        if (!targetId) {
-            const match = Object.keys(this.localDb.usernameMap).find(n => n.includes(lowerName));
-            if (match) targetId = this.localDb.usernameMap[match];
+        // Local fallback: find all matching usernames
+        const results: Friend[] = [];
+        for (const [name, id] of Object.entries(this.localDb.usernameMap)) {
+            if (name.includes(lowerName)) {
+                const profile = this.localDb.users[id];
+                if (profile) {
+                    results.push({
+                        id: profile.userId,
+                        name: profile.username,
+                        highScore: profile.highScore
+                    });
+                }
+            }
         }
-
-        if (!targetId) return null;
-        const profile = this.localDb.users[targetId];
-        if (!profile) return null;
-
-        return {
-            id: profile.userId,
-            name: profile.username,
-            highScore: profile.highScore
-        };
+        return results;
     }
 
     // 4. Get friends stats

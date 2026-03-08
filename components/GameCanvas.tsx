@@ -800,20 +800,26 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
             player.rightFoot.y = floorY - 10 + Math.cos(time) * 3;
 
         } else if (gameState === 'MENU' || gameState === 'SHOP' || gameState === 'UPGRADE' || gameState === 'FRIENDS' || gameState === 'PASS') {
+            // Idle animation that looks like gameplay
             const time = Date.now() / 1000;
             player.x = width / 2;
 
-            // Juggling pattern
-            const jugglePhase = (time * 3) % (Math.PI * 2);
-            const isLeft = jugglePhase < Math.PI;
-            const bounceY = Math.abs(Math.sin(time * 6)) * 40;
+            // Bounce ball up and down like kicking it during gameplay
+            const bounceSpeed = 4;
+            const bouncePhase = (time * bounceSpeed) % (Math.PI * 2);
+            const bounceHeight = Math.abs(Math.sin(bouncePhase)) * 80; // Higher bounce like gameplay
+            const gravity = Math.sin(bouncePhase) > 0 ? 1 : 0.6; // Asymmetric for realism
 
-            ball.pos.x = player.x + (isLeft ? -15 : 15);
-            ball.pos.y = floorY - 30 - bounceY - ball.radius;
-            ball.rotation = time * 2;
+            ball.pos.x = player.x + Math.sin(time * 1.5) * 8; // Slight horizontal drift
+            ball.pos.y = floorY - 40 - bounceHeight * gravity - ball.radius;
+            ball.rotation += 0.08; // Continuous spin
+            ball.vel = { x: 0, y: Math.cos(bouncePhase) * 3 }; // Simulate velocity for visual
 
-            player.leftFoot.y = floorY - 10 - (isLeft ? Math.abs(Math.sin(time * 6)) * 20 : 0);
-            player.rightFoot.y = floorY - 10 - (!isLeft ? Math.abs(Math.sin(time * 6)) * 20 : 0);
+            // Kick foot up when ball is at lowest point
+            const kickPhase = Math.sin(bouncePhase);
+            const isKicking = kickPhase < 0.1 && kickPhase > -0.3;
+            player.leftFoot.y = floorY - 10 - (isKicking ? 25 : Math.abs(Math.sin(time * 2)) * 5);
+            player.rightFoot.y = floorY - 10 - (!isKicking ? 0 : Math.abs(Math.cos(time * 2)) * 5);
         }
 
 
@@ -1199,13 +1205,6 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
         ctx.lineTo(centerX - goalAreaBottomW / 2, goalAreaBottomY);
         ctx.lineTo(centerX + goalAreaBottomW / 2, goalAreaBottomY);
         ctx.lineTo(centerX + goalAreaTopW / 2, boxTopY);
-        ctx.stroke();
-
-        // Penalty arc (D shape) - Drawn below the 18 yard box line
-        const arcRadiusX = 100;
-        const arcRadiusY = 30; // Squished for perspective
-        ctx.beginPath();
-        ctx.ellipse(centerX, boxBottomY, arcRadiusX, arcRadiusY, 0, 0, Math.PI);
         ctx.stroke();
 
         // Penalty Spot
