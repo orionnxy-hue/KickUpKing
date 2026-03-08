@@ -467,7 +467,7 @@ class DatabaseService {
                 const { data, error } = await supabase
                     .from('profiles')
                     .select('*')
-                    .ilike('username', queryName)
+                    .ilike('username', `%${queryName}%`)
                     .order('high_score', { ascending: false })
                     .limit(1);
 
@@ -484,7 +484,12 @@ class DatabaseService {
             }
         }
 
-        const targetId = this.localDb.usernameMap[lowerName];
+        let targetId = this.localDb.usernameMap[lowerName];
+        if (!targetId) {
+            const match = Object.keys(this.localDb.usernameMap).find(n => n.includes(lowerName));
+            if (match) targetId = this.localDb.usernameMap[match];
+        }
+
         if (!targetId) return null;
         const profile = this.localDb.users[targetId];
         if (!profile) return null;

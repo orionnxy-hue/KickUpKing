@@ -489,7 +489,6 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
                 if (ball.vel.y < -2.0) {
                     scoreRef.current += 1;
                     lastScoreTime.current = now;
-                    bgPulseRef.current = 1.0;
                     onScoreUpdateRef.current(scoreRef.current);
 
                     // --- MONEY EARNED VISUAL ---
@@ -579,10 +578,6 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
         const ball = ballRef.current;
         const player = playerRef.current;
         const floorY = height - PHYSICS.FLOOR_PADDING;
-
-        if (bgPulseRef.current > 0) {
-            bgPulseRef.current = Math.max(0, bgPulseRef.current - 0.02 * dt);
-        }
 
         // --- REPLAY LOGIC ---
         if (gameState === 'REPLAY') {
@@ -804,13 +799,21 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
             player.leftFoot.y = floorY - 10 + Math.sin(time) * 3;
             player.rightFoot.y = floorY - 10 + Math.cos(time) * 3;
 
-        } else if (gameState === 'MENU' || gameState === 'SHOP' || gameState === 'UPGRADE') {
+        } else if (gameState === 'MENU' || gameState === 'SHOP' || gameState === 'UPGRADE' || gameState === 'FRIENDS' || gameState === 'PASS') {
             const time = Date.now() / 1000;
-            ball.pos.x = (width / 2) + 80;
-            ball.pos.y = floorY - ball.radius;
-            ball.rotation = 0;
-            player.leftFoot.y = floorY - 10 + Math.sin(time * 2) * 5;
-            player.rightFoot.y = floorY - 10 + Math.cos(time * 2) * 5;
+            player.x = width / 2;
+
+            // Juggling pattern
+            const jugglePhase = (time * 3) % (Math.PI * 2);
+            const isLeft = jugglePhase < Math.PI;
+            const bounceY = Math.abs(Math.sin(time * 6)) * 40;
+
+            ball.pos.x = player.x + (isLeft ? -15 : 15);
+            ball.pos.y = floorY - 30 - bounceY - ball.radius;
+            ball.rotation = time * 2;
+
+            player.leftFoot.y = floorY - 10 - (isLeft ? Math.abs(Math.sin(time * 6)) * 20 : 0);
+            player.rightFoot.y = floorY - 10 - (!isLeft ? Math.abs(Math.sin(time * 6)) * 20 : 0);
         }
 
 
@@ -824,34 +827,6 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
         grad.addColorStop(1, stadiumConfig.pitchColorTop);
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, width, height);
-
-        if (bgPulseRef.current > 0) {
-            const pulse = bgPulseRef.current;
-            const cx = width / 2;
-            ctx.save();
-
-            ctx.globalCompositeOperation = 'screen';
-
-            const pulseGrad = ctx.createRadialGradient(cx, height / 2, 0, cx, height / 2, Math.max(width, height) * 0.8 * pulse);
-            pulseGrad.addColorStop(0, `rgba(255, 255, 255, ${pulse * 0.5})`);
-            pulseGrad.addColorStop(1, 'transparent');
-            ctx.fillStyle = pulseGrad;
-            ctx.fillRect(0, 0, width, height);
-
-            ctx.translate(cx, height / 2);
-            ctx.rotate(Date.now() / 2000);
-            ctx.fillStyle = `rgba(255, 255, 255, ${pulse * 0.15})`;
-            for (let i = 0; i < 12; i++) {
-                ctx.rotate(Math.PI / 6);
-                ctx.beginPath();
-                ctx.moveTo(0, 0);
-                ctx.lineTo(-width, -Math.max(width, height) * 1.5);
-                ctx.lineTo(width, -Math.max(width, height) * 1.5);
-                ctx.fill();
-            }
-
-            ctx.restore();
-        }
 
         const time = Date.now() / 1000;
 
@@ -1192,6 +1167,47 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
                 ctx.fillRect(0, y1, width, h);
             }
         }
+
+        // --- PENALTY AREA ---
+        ctx.save();
+        ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+        ctx.lineWidth = 4;
+        const boxTopW = 440;
+        const boxBottomW = 900;
+        const boxTopY = floorY;
+        const boxBottomY = height - 50;
+
+        // 18-yard box
+        ctx.beginPath();
+        ctx.moveTo(centerX - boxTopW / 2, boxTopY);
+        ctx.lineTo(centerX - boxBottomW / 2, boxBottomY);
+        ctx.lineTo(centerX + boxBottomW / 2, boxBottomY);
+        ctx.lineTo(centerX + boxTopW / 2, boxTopY);
+        ctx.stroke();
+
+        // 6-yard box
+        const goalAreaTopW = 150;
+        const goalAreaBottomW = 300;
+        const goalAreaBottomY = floorY + 80;
+
+        ctx.beginPath();
+        ctx.moveTo(centerX - goalAreaTopW / 2, boxTopY);
+        ctx.lineTo(centerX - goalAreaBottomW / 2, goalAreaBottomY);
+        ctx.lineTo(centerX + goalAreaBottomW / 2, goalAreaBottomY);
+        ctx.lineTo(centerX + goalAreaTopW / 2, boxTopY);
+        ctx.stroke();
+
+        // Penalty arc (D shape) - Drawn below the 18 yard box line
+        ctx.beginPath();
+        ctx.ellipse(centerX, boxBottomY, 180, 40, 0, Math.PI, Math.PI * 2);
+        ctx.stroke();
+
+        // Penalty spot
+        ctx.fillStyle = 'rgba(255,255,255,0.9)';
+        ctx.beginPath();
+        ctx.arc(centerX, boxBottomY - 60, 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
 
         decorationsRef.current.forEach(d => {
             ctx.fillStyle = d.color;

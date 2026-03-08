@@ -153,8 +153,9 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({
 
     // Friend Request State
     const [isSendingRequest, setIsSendingRequest] = useState(false);
-    const [addFriendSuccess, setAddFriendSuccess] = useState("");
-    const [addFriendError, setAddFriendError] = useState("");
+    const [sentRequestIds, setSentRequestIds] = useState<string[]>([]);
+    const [requestErrors, setRequestErrors] = useState<Record<string, string>>({});
+    const [shareMessage, setShareMessage] = useState("");
 
     // Determine if I am in the list AND calculate rank from list if possible
     const myIndexInGlobal = userId ? globalLeaderboard.findIndex(f => f.id.toLowerCase() === userId.toLowerCase()) : -1;
@@ -569,7 +570,7 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({
 
                 {/* Title */}
                 <div
-                    className="absolute top-24 left-1/2 -translate-x-1/2 pointer-events-auto cursor-default z-40 select-none animate-[bounce_3s_ease-in-out_infinite]"
+                    className="absolute top-6 left-1/2 -translate-x-1/2 pointer-events-auto cursor-default z-40 select-none animate-[bounce_3s_ease-in-out_infinite]"
                 >
                     <h1 className="text-4xl md:text-6xl font-arcade text-white text-center drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)] tracking-tighter">
                         <span className="text-yellow-400">Kick</span>Up <span className="text-blue-400">King</span>
@@ -657,8 +658,8 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({
                             </button>
                         </div>
 
-                        {/* PLAY BUTTON - Adjusted to far right */}
-                        <div className="absolute top-1/2 -translate-y-1/2 right-4 md:right-12 flex items-center justify-center pointer-events-none z-40 select-none touch-manipulation">
+                        {/* PLAY BUTTON - Adjusted to bottom right */}
+                        <div className="absolute bottom-12 right-4 flex items-center justify-center pointer-events-none z-40 select-none touch-manipulation">
                             <button
                                 onClick={onStart}
                                 className="pointer-events-auto bg-gradient-to-b from-yellow-400 to-orange-500 w-56 h-20 rounded-2xl border-b-8 border-orange-700 shadow-[0_0_20px_rgba(250,204,21,0.5)] flex items-center justify-center gap-4 active:border-b-2 active:translate-y-2 transition-all group relative overflow-hidden hover:scale-105 animate-pulse"
@@ -1194,16 +1195,25 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({
                                                                     setIsSendingRequest(true);
                                                                     onSendFriendRequest(friend).then(ok => {
                                                                         setIsSendingRequest(false);
-                                                                        if (ok) setAddFriendSuccess("Sent!");
-                                                                        else setAddFriendError("Failed");
-                                                                        setTimeout(() => { setAddFriendSuccess(""); setAddFriendError(""); }, 2000);
+                                                                        if (ok) {
+                                                                            setSentRequestIds(prev => [...prev, friend.id]);
+                                                                        } else {
+                                                                            setRequestErrors(prev => ({ ...prev, [friend.id]: "Failed" }));
+                                                                            setTimeout(() => {
+                                                                                setRequestErrors(prev => {
+                                                                                    const next = { ...prev };
+                                                                                    delete next[friend.id];
+                                                                                    return next;
+                                                                                });
+                                                                            }, 2000);
+                                                                        }
                                                                     });
                                                                 }}
                                                                 className="bg-white/10 hover:bg-blue-600 hover:text-white p-2 rounded-full text-white/40 transition-all"
                                                                 title="Add Friend"
-                                                                disabled={isSendingRequest}
+                                                                disabled={isSendingRequest || sentRequestIds.includes(friend.id)}
                                                             >
-                                                                {addFriendSuccess ? <Check size={16} className="text-green-400" /> : <UserPlus size={16} />}
+                                                                {sentRequestIds.includes(friend.id) ? <Check size={16} className="text-green-400" /> : <UserPlus size={16} />}
                                                             </button>
                                                         )}
                                                         {socialTab === 'FRIENDS' && (
@@ -1263,24 +1273,30 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({
                                                     <button
                                                         onClick={() => {
                                                             onSendFriendRequest(searchResult).then(ok => {
-                                                                if (ok) setAddFriendSuccess("Request Sent!");
-                                                                else setAddFriendError("Already friends or sent.");
+                                                                if (ok) {
+                                                                    setSentRequestIds(prev => [...prev, searchResult.id]);
+                                                                } else {
+                                                                    setRequestErrors(prev => ({ ...prev, [searchResult.id]: "Failed" }));
+                                                                }
                                                                 setTimeout(() => {
-                                                                    setAddFriendSuccess("");
-                                                                    setAddFriendError("");
                                                                     setSearchResult(null);
                                                                     setFriendNameInput("");
+                                                                    setRequestErrors(prev => {
+                                                                        const next = { ...prev };
+                                                                        delete next[searchResult.id];
+                                                                        return next;
+                                                                    });
                                                                 }, 2000);
                                                             });
                                                         }}
-                                                        className="w-full bg-green-600 hover:bg-green-500 text-white font-bold text-xs py-2 rounded"
+                                                        disabled={sentRequestIds.includes(searchResult.id)}
+                                                        className="w-full bg-green-600 hover:bg-green-500 text-white font-bold text-xs py-2 rounded disabled:opacity-50"
                                                     >
-                                                        SEND REQUEST
+                                                        {sentRequestIds.includes(searchResult.id) ? "REQUEST SENT" : "SEND REQUEST"}
                                                     </button>
                                                 </div>
                                             )}
-                                            {addFriendSuccess && <div className="text-green-400 text-xs font-bold mt-2 text-center">{addFriendSuccess}</div>}
-                                            {addFriendError && <div className="text-red-400 text-xs font-bold mt-2 text-center">{addFriendError}</div>}
+                                            {searchResult && requestErrors[searchResult.id] && <div className="text-red-400 text-xs font-bold mt-2 text-center">{requestErrors[searchResult.id]}</div>}
                                         </div>
 
                                         <div className="bg-black/20 p-4 rounded-xl border border-white/5 flex-1">
@@ -1289,9 +1305,10 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({
                                             </div>
                                             <div className="bg-white/5 p-3 rounded-lg text-center cursor-pointer hover:bg-white/10 transition-colors" onClick={() => {
                                                 navigator.clipboard.writeText(`Add me on KickUp King! Username: ${username}`);
-                                                setAddFriendSuccess("Copied to clipboard!");
-                                                setTimeout(() => setAddFriendSuccess(""), 2000);
+                                                setShareMessage("Copied to clipboard!");
+                                                setTimeout(() => setShareMessage(""), 2000);
                                             }}>
+                                                {shareMessage && <div className="text-green-400 text-xs font-bold mb-1">{shareMessage}</div>}
                                                 <div className="text-white/40 text-xs uppercase font-bold mb-1">Your ID Code</div>
                                                 <div className="text-white font-mono text-lg tracking-widest">{userId.split('#')[1] || '????'}</div>
                                                 <div className="text-blue-400 text-[10px] font-bold mt-2 uppercase">Tap to Copy Invite</div>
