@@ -657,8 +657,8 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({
                             </button>
                         </div>
 
-                        {/* PLAY BUTTON - Adjusted for mobile position */}
-                        <div className="absolute bottom-[20%] left-1/2 -translate-x-1/2 flex items-end justify-center pointer-events-none z-40 select-none touch-manipulation">
+                        {/* PLAY BUTTON - Adjusted to far right */}
+                        <div className="absolute top-1/2 -translate-y-1/2 right-4 md:right-12 flex items-center justify-center pointer-events-none z-40 select-none touch-manipulation">
                             <button
                                 onClick={onStart}
                                 className="pointer-events-auto bg-gradient-to-b from-yellow-400 to-orange-500 w-56 h-20 rounded-2xl border-b-8 border-orange-700 shadow-[0_0_20px_rgba(250,204,21,0.5)] flex items-center justify-center gap-4 active:border-b-2 active:translate-y-2 transition-all group relative overflow-hidden hover:scale-105 animate-pulse"
